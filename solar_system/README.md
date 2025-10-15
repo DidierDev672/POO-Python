@@ -11,7 +11,7 @@
 5. ***Unidades:*** El codigo usa metros y segundos; para imprimir convertimos a AU a dias cuando conviene.
 
 # 🌍 Qué verás al ejecutar el programa
-1. Una *** ventana grafica *** con las orbitas de la Tierra, Marte y la Luna (Simplificada.)
+1. Una ***ventana grafica*** con las orbitas de la Tierra, Marte y la Luna (Simplificada.)
 2. El ***Sol*** en el centro (amarillo)
 3. Cada planeta con su orbita y su posucion actual.
 
@@ -19,7 +19,7 @@
 
 | Elemento | Que hace | | Ejemplo |
 | -------------- | ------------ | ----------- |
-| *** days_to_simulate=365 *** | Duracion de la simulacion | Cambia a *** 365*2 *** para 2 years|
-| *** semi_major_axis *** | Distancia al Sol | Prueba con 0.39 * AU para Mercurio|
-| *** plt.scatter(..., s=50) *** | Tamano de los puntos | Ajusta el tamano de planetas |
-| *** t_values = [i * DAY for i in range(0, days_to_simulate, 5)] *** | Paso temporal | Reduce a *** 1 *** para mas detalle|
+| ***days_to_simulate=365*** | Duracion de la simulacion | Cambia a ***365*2*** para 2 years|
+| ***semi_major_axis*** | Distancia al Sol | Prueba con 0.39 * AU para Mercurio|
+| ***plt.scatter(..., s=50)*** | Tamano de los puntos | Ajusta el tamano de planetas |
+| ***t_values = [i * DAY for i in range(0, days_to_simulate, 5)]*** | Paso temporal | Reduce a ***1*** para mas detalle|
