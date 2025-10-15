@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional, List, Tuple
 import math
+import matplotlib.pyplot as plt
 
 # ? Constantes físicas
 G = 6.67430e-11  # ? Constante gravitacional (m^3 kg^-1 s^-2)
@@ -32,6 +33,20 @@ class CelestialBody:
         a = self.semi_major_axis
         M = self.parent.mass if self.parent else 0.0
         return 2 * math.pi * math.sqrt(a**3 / (G * (M + self.mass)))
+
+    def position_at_time(self, t: float) -> Tuple[float, float]:
+        if not self.parent or self.semi_major_axis is None or self._orbital_period is None:
+            return (0.0, 0.0)
+
+        T = self._orbital_period
+        theta = 2 * math.pi * (t % T) / T
+
+        a = self.semi_major_axis
+        x_rel = a * math.cos(theta)
+        y_rel = a * math.sin(theta)
+
+        px, py = self.parent.position_at_time(t)
+        return (px + x_rel, py + y_rel)
 
     @property
     def orbital_period(self) -> Optional[float]:
@@ -93,46 +108,86 @@ class SolarSystem:
             result.append((b.name, x, y))
         return result
 
+    def simulate_positions(self, t_seconds: float) -> List[Tuple[str, float, float]]:
+        return [(b.name, *b.position_at_time(t_seconds)) for b in self.bodies]
+
+    def plot_orbits(self, days_to_simulate: int = 365):
+        """
+        Dibuja las órbitas de todos los cuerpos y su posición actual.
+        """
+
+        plt.figure(figsize=(8, 8))
+        plt.title(f"Orbitas del {self.name}")
+        plt.xlabel("Distancia x (UA)")
+        plt.ylabel("Distancia Y (UA)")
+        plt.grid(True)
+        plt.axis("equal")
+        t_values = [i * DAY for i in range(0, days_to_simulate, 5)]
+
+        for b in self.bodies:
+            if not b.parent:
+                continue
+
+            xs, ys = [], []
+            for t in t_values:
+                x, y = b.position_at_time(t)
+                xs.append(x / AU)
+                ys.append(y / AU)
+
+            plt.plot(xs, ys, label=b.name)
+            # ? Posicion actual al final del recorrido
+            x_now, y_now = b.position_at_time(t_values[-1])
+            plt.scatter(x_now / AU, y_now / AU, s=50)
+
+        plt.scatter(0, 0, color="yellow", s=200, label="Sol")
+        plt.legend()
+        plt.show()
+
 
 # -------------------------
 #! EJEMPLO DE USO
 # -------------------------
 if __name__ == "__main__":
-    # ? Crear sistema
     ss = SolarSystem()
 
-    # ? Sol (masa en kg)
-    sun = CelestialBody(name="Sol", mass=1.98847e30, radius=6.9634e8)
+    # ? Sol
+    sun = CelestialBody(name="Sol", mass=1.98847e30)
     ss.add_body(sun)
 
-    # ? Tierra (masa en kg, semieje mayor ~1 AU)
-    earth = CelestialBody(name="Tierra", mass=5.9722e24, radius=6.371e6,
+    # ? Tierra
+    earth = CelestialBody(name="Tierra", mass=5.9722e24,
                           parent=sun, semi_major_axis=1.0 * AU)
     ss.add_body(earth)
 
-    # ? Luna (masa, semieje respecto a la Tierra ~384400 km)
-    moon = CelestialBody(name="Luna", mass=7.342e22, radius=1.737e6,
+    # ? Luna
+    moon = CelestialBody(name="Luna", mass=7.342e22,
                          parent=earth, semi_major_axis=384400e3)
     ss.add_body(moon)
 
-    # ? Marte (ejemplo)
+    # ? Marte
     mars = CelestialBody(name="Marte", mass=6.4171e23,
                          parent=sun, semi_major_axis=1.523679 * AU)
     ss.add_body(mars)
 
-    # ? Mostrar info de cuerpos
-    for b in ss.bodies:
-        print(b)
+    # ?Dibujar las órbitas durante un año
+    ss.plot_orbits(days_to_simulate=365)
 
-    print("\nPosiciones en t = 0 (m):")
-    for name, x, y in ss.simulate(0):
-        print(f"{name:7s} -> x={x:.3e} m, y={y:.3e} m")
+    # # ? Mostrar info de cuerpos
+    # for b in ss.bodies:
+    #     print(b)
 
-    # ? Simular varias fechas: t = 0, 30, 365 días
-    tiempos_dias = [0, 30, 365]
-    print("\nPosiciones (en AU) en varios tiempos:")
-    for d in tiempos_dias:
-        t = d * DAY
-        print(f"\nDía {d}:")
-        for name, x, y in ss.simulate(t):
-            print(f"{name:7s} -> x={x/AU:.6f} AU, y={y/AU:.6f} AU")
+    # print("\nPosiciones en t = 0 (m):")
+    # for name, x, y in ss.simulate(0):
+    #     print(f"{name:7s} -> x={x:.3e} m, y={y:.3e} m")
+
+    # # ? Simular varias fechas: t = 0, 30, 365 días
+    # tiempos_dias = [0, 30, 365]
+    # print("\nPosiciones (en AU) en varios tiempos:")
+    # for d in tiempos_dias:
+    #     t = d * DAY
+    #     print(f"\nDía {d}:")
+    #     for name, x, y in ss.simulate(t):
+    #         print(f"{name:7s} -> x={x/AU:.6f} AU, y={y/AU:.6f} AU")
+
+    # ? Dibujar las orbitas durante un year
+    ss.plot_orbits(days_to_simulate=365)
