@@ -1,3 +1,6 @@
+import logging
+
+
 def calcular_promedio_ponderado(notas, pesos):
     """
         Calcula el promedio ponderado de una lista de notas cientificas.
@@ -38,6 +41,31 @@ def calcular_promedio_ponderado(notas, pesos):
     finally:
         print("Ejecución finalizada.\n")
 
+
+def promedio(notas):
+    if not notas:
+        raise ValueError("The list of notes cannot be empty")
+    return sum(notas) / len(notas)
+
+
+def calcular_presion(volumen, temperatura):
+    try:
+        if volumen <= 0:
+            raise ValueError("The volume must be positive")
+        presion = (8.31 * temperatura) / volumen
+        logging.info(f"Correct calculation: p = {presion:.2f}")
+        return presion
+    except ValueError as e:
+        logging.error(f"Calculation error: {e}")
+
+
+def calcular_area(base, altura):
+    return base * altura / 2
+
+
+print(f"Calculate the area of a triangle: {calcular_area(12, 20)}")
+
+print(f"Pressure value:  {calcular_presion(175, 36)}")
 
 #! ----- PRUEBAS -----
 notas_correctas = [4.5, 3.8, 5.0]
