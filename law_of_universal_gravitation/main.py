@@ -1,5 +1,4 @@
-
-import math
+import numpy as np
 import matplotlib.pyplot as plt
 
 #? Constante gravitacional
@@ -7,28 +6,26 @@ G = 6.67430e-11 #? N·m²/kg²
 
 #todo ------ Clase Cuerpo Celeste ------
 class CuerpoCeleste:
-    def __init__(self, name: str, mass: float, x: float, y: float):
+    def __init__(self, name: str, mass: float, position: np.ndarray):
         self.name = name
         self.mass = mass #! en kg
-        self.x = x #! en metros
-        self.y = y #! en metros
+        self.position = np.array(position, dtype=float) #! Vector [x, y]
 
-    def position(self):
-        return (self.x, self.y)
 
     def distance_a(self, other: "CuerpoCeleste") -> float:
-        """ Calcula la distancia entre dos cuerpos  """
-        dx = other.x - self.x
-        dy = other.y - self.y
-        return math.sqrt(dx**2 + dy**2)
+        """ Calcula la distancia entre dos cuerpos usando norma de Numpy"""
+        return np.linalg.norm(self.position - other.position)
 
     def fuerza_gravitacional_a(self, other: "CuerpoCeleste") -> float:
-        """ Aplica la ley de gravitación universal para calcular la fuerza entre dos cuerpos """
-        distance = self.distance_a(other)
+        """ Devuelve el vector fuerza gravitacional que ejerce otro cuerpo """
+
+        address = other.position - self.position
+        distance = np.linalg.norm(address)
         if distance == 0:
-            return 0 #! Evitar división por cero
-        force = G * (self.mass * other.mass) / (distance**2)
-        return force
+            return np.zeros(2)
+        force_magnitude = G * (self.mass * other.mass) / distance**2
+        force_direction = address / distance
+        return force_magnitude *  force_direction
 
 #! ------ Clase Sistema Solar ------
 class SistemaNewtoniano:
@@ -45,17 +42,17 @@ class SistemaNewtoniano:
             for j, body2 in enumerate(self.body):
                 if i < j: #! Evita duplicados
                     force = body.fuerza_gravitacional_a(body2)
-                    print(f"Fuerza entre {body.name} y {body2.name}: {force:.2e} N")
+                    print(f"Fuerza entre {body.name} y {body2.name}: {force} N")
 
     def graphic_system(self):
         """ Dibuja la posición de los cuerpos celestes"""
         plt.figure(figsize=(6, 6))
-        plt.title("Sistema Newtoniano (Posición de los cuerpos)")
-        plt.xlabel("x")
-        plt.ylabel("y")
+        plt.title("Sistema Newtoniano (coordenadas vectoriales)")
+        plt.xlabel("x (m)")
+        plt.ylabel("y (m)")
         for body in self.body:
-            plt.scatter(body.x, body.y, label=body.name, s=100)
-            plt.text(body.x + 1e10, body.y + 1e10, body.name)
+            plt.scatter(*body.position, label=body.name, s=100)
+            plt.text(body.position[0] + 1e10, body.position[1] + 1e10, body.name)
         plt.legend()
         plt.grid(True)
         plt.show()
@@ -65,9 +62,9 @@ if __name__ == "__main__":
     system = SistemaNewtoniano()
 
     #? Crear cuerpos: Sol y Tierra
-    sol = CuerpoCeleste("Sol", 1.989e30, 0, 0)
-    tierra = CuerpoCeleste("Tierra", 5.972e24, 1.496e11, 0)
-    marte = CuerpoCeleste("Marte", 6.39e23, 2.279e11, 0)
+    sol = CuerpoCeleste("Sol", 1.989e30, [0, 0])
+    tierra = CuerpoCeleste("Tierra", 5.972e24, [1.496e11, 0])
+    marte = CuerpoCeleste("Marte", 6.39e23, [2.279e11, 1.5e10])
 
     #? Agregar al sistema
     system.add_body(sol)
